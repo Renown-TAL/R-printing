@@ -1,0 +1,22 @@
+setwd('/home/mjy/caoshuo/ASm6A_variant_type_1221')
+library(ggplot2)
+aaa = read.table('v_t_all_count',header = F)
+p = ggplot(aaa,aes(x=V1,y=V2))+
+geom_bar(stat = 'identity',fill = "#53c653")+
+theme_bw() + 
+xlab("Variant type")+ylab("")+
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1,color = "black",size = 20),
+    axis.text.y = element_text(hjust = 1,color = "black",size = 20),
+    axis.title=element_text(size=25,face="bold"),
+    #axis.title = element_blank(),
+    #axis.text = element_blank(),
+    panel.border = element_blank(),
+    panel.grid = element_blank(),
+    legend.position = "none",
+    #plot.margin = unit(rep(-2,4), "cm")
+    axis.line = element_line(colour = "black"),
+  )+
+  coord_fixed(ratio = 0.0002)
+  
+  ggsave("a.pdf",p,dpi=600, width = 14.2, height = 6)
