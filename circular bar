@@ -1,0 +1,96 @@
+library(ggplot2)
+## https://github.com/holtzy/R-graph-gallery/blob/master/299-circular-stacked-barplot.Rmd
+## https://rpubs.com/Grady/630513
+############################ circle barplot ##################
+in_file = "/home/mjy/caoshuo/print_angle_0114/in_file"
+df <- read.table(in_file, sep = ",", header = TRUE)
+print(head(df))
+df$Sample <- factor(df$Sample, levels = df$Sample,ordered = TRUE)
+#color_list <- c(heat.colors(10)[c(2,3,5,7,8)], terrain.colors(10)[c(2,4,6,7,8)], rainbow(15))
+color_list <- c("white","#ff6666","#ff9933","#53c653","#ffcc00","#6699ff","#6666FF","lightgrey")
+
+#"#ff9933","#CC9966","#ffcc00","#6699ff","#53c653","lightgrey","#6666FF","#ff6666"
+#######
+# This section prepare a dataframe for labels
+# Get the name and the y position of each label
+label_data <- df
+label_data$id <- seq(1, nrow(df))
+# calculate the ANGLE of the labels
+number_of_bar <- nrow(label_data)
+angle <- 90 - 360*(label_data$id-0.5)/number_of_bar  # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+# calculate the alignment of labels: right or left
+# If I am on the left part of the plot, my labels have currently an angle < -90
+label_data$hjust<-ifelse(angle < -90, 1, 0)
+# flip angle to make them readable
+label_data$angle<-ifelse(angle < -90, angle+180, angle)
+#######
+base_data <- data.frame(#inside cycle
+  group = unique(df$Tissue),
+  start = c(1,2,17,25,31,38,47,54),
+  end = c(1.5,16,24,30,37,46,53,90.5),
+  angle <- c(label_data$angle[1],label_data$angle[8],label_data$angle[20],
+  label_data$angle[27],(label_data$angle[33]+label_data$angle[33])/2, (label_data$angle[41]+label_data$angle[42])/2,
+  (label_data$angle[49]+label_data$angle[50])/2,(label_data$angle[72]+label_data$angle[73])/2)
+)
+base_data$title <- rowMeans(base_data[,c('start', 'end')], na.rm=TRUE)
+head(base_data)
+
+
+base_data2 <- data.frame(#outside cycle
+  group = c("fetal","adult","fetal","adult","fetal","adult","fetal","adult","fetal","adult","fetal","adult","fetal","adult"),
+  #group = c("fetal","adult","fetal","adult","fetal","adult","fetal","adult","fetal","adult","fetal","adult","fetal","adult")
+  start = c(2,5,17,20,25,28,31,34,38,40,47,49,54,59),
+  end = c(4,16,19,24,27,30,33,37,39,46,48,53,58,91),
+  angle <- c((label_data$angle[2]+label_data$angle[3])/2,label_data$angle[10],(label_data$angle[17]+label_data$angle[18])/2,(label_data$angle[21]+label_data$angle[22]),
+             (label_data$angle[25]+label_data$angle[26])/2,(label_data$angle[28]+label_data$angle[29])/2,(label_data$angle[31]+label_data$angle[32])/2,label_data$angle[35],
+             label_data$angle[38],label_data$angle[43],label_data$angle[47],
+             (label_data$angle[50]+label_data$angle[51])/2,label_data$angle[56],(label_data$angle[75]+label_data$angle[76])/2
+             )
+)
+base_data2$title <- rowMeans(base_data2[,c('start', 'end')], na.rm=TRUE)
+head(base_data2)
+
+grid_data<- data.frame(
+  end = 0.75,
+  start = 1.25
+  )
+
+#     start = c(1,2,3,5,7,22,23,24,26,34,36,42,49,58,65,66,69,71,73,79,83,84,86,87,88),
+#     end = c(1.5,2.5,4,6,21,22.5,23.5,25,33,35,41,48,57,64,65.5,68,70,72,78,82,83.5,85,86.5,87.5,90),
+#     angle <- c(88,84,78,70,36,4,0,-6,-26,-46,-62,-88,60,28,12,4,-6,-14,-30,-50,-60,-66,-72,-76,-84)
+######
+p <- ggplot(data=df, aes(x=Sample,y=Number,fill=Tissue)) + 
+  geom_bar(stat="identity", width=0.8) + 
+  scale_fill_manual(values = color_list)+
+  ylim(-2000, 2000) + 
+  theme_bw() + 
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    # panel.border = element_blank(),
+    panel.grid = element_blank(),
+    legend.position = "none",
+    plot.margin = unit(rep(-2,4), "cm")
+  ) + 
+  coord_polar(start = 0) +
+
+  # geom_text(data=label_data, aes(x=id, y=Number+26, label=Sample, hjust=hjust), color="black", fontface="bold",alpha=0.8, size=3.5, angle= label_data$angle, inherit.aes=FALSE) +
+# Add base line information
+  geom_segment(data=base_data2, aes(x=start, y=-50, xend=end, yend=-50),colour="black",alpha=0.8,size=0.8,inherit.aes=FALSE)+
+  geom_text(data=base_data2,aes(x=title,y=-100,label=group),hjust=c(rep(1, times=10),0,rep(0, times=3)),colour="black",alpha=0.8,size=4,fontface="bold",angle=base_data2$angle, inherit.aes = FALSE)+
+  geom_segment(data=base_data, aes(x=start, y=-800, xend=end, yend=-800, colour=group),alpha=0.8,size=0.6,inherit.aes=FALSE)  + scale_colour_manual(values=color_list)+
+  #geom_text(data=base_data,aes(x=title,y=-1000,label=group),hjust=c(0,0,0,0,0,0,1,1),colour="black",alpha=0.8,size=3,fontface="bold", angle= base_data$angle, inherit.aes = FALSE,angle=90)+
+  geom_segment(data=grid_data, aes(x = end, y = 0, xend = start, yend = 0), colour = "black", alpha=1, size=0.8 , inherit.aes = FALSE )+
+  geom_segment(data=grid_data, aes(x = end, y = max(label_data$Number)*0.25, xend = start, yend = max(label_data$Number)*0.25), colour = "black", alpha=1, size=0.8 , inherit.aes = FALSE )+
+  geom_segment(data=grid_data, aes(x = end, y = max(label_data$Number)*0.5, xend = start, yend = max(label_data$Number)*0.5), colour = "black", alpha=1, size=0.8 , inherit.aes = FALSE )+
+  geom_segment(data=grid_data, aes(x = end, y = max(label_data$Number)*0.75, xend = start, yend = max(label_data$Number)*0.75), colour = "black", alpha=1, size=0.8 , inherit.aes = FALSE )+
+  geom_segment(data=grid_data, aes(x = end, y = max(label_data$Number), xend = start, yend = max(label_data$Number)), colour = "black", alpha=1, size=0.8 , inherit.aes = FALSE )+
+  geom_segment(data=grid_data, aes(x = end, y = 0, xend = end, yend = max(label_data$Number)), colour = "black", alpha=0.8, size=0.4 , inherit.aes = FALSE)+
+  #ggplot2::annotate("text", x = c(1.2,1.35,1.25,1.25,1.35), y = c(0, 402, 804, 1207, max(label_data$Number)), color="black", size=3 , angle=0, fontface="bold", hjust=1)
+  ggplot2::annotate("text", x = c(1.3,1.8,1.7,1.8,1.65), y = c(0, 402, 804, 1207, max(label_data$Number))+100, label = c("0", "402", "804", "1207", "1609"),color="black",size=c(3,3,3,3,3) , angle=0, fontface="bold", hjust=1)
+#h_max = max(label_data$Number)
+#h_min = min(label_data$Number)
+
+p
+ggsave("/home/mjy/caoshuo/print_angle_0114/test.pdf",p, dpi=600, width = 9.86, height = 11)
+
