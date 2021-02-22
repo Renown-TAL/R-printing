@@ -1,0 +1,37 @@
+######read data and set color
+setwd('/home/mjy/caoshuo/Functional_ASm6A_1218')
+library(ggplot2)
+aaa = read.csv('f',header = T)
+aaa$Tissue <- factor(aaa$Tissue,levels = aaa$Tissue)
+color_list <- c("#ff6666","#ff9933","#53c653","#ffcc00","#6699ff","#6666FF","lightgrey","lightgrey")
+color_list = rep(color_list,2)# two status in same color but different alpha
+a = c(aaa$ASm6A_ave,aaa$Peak_ave)
+b = aaa$Tissue
+d = c(rep("AS",8),rep("peak",8))
+c = data.frame(a,b,d)
+
+######printing
+p = ggplot(c, aes(x = b, y = a, fill=interaction(b,d), dodge=d)) +
+geom_bar(stat = 'identity',width=0.9,position="dodge",alpha = rep(c(1,0.6),each = 8)) +
+scale_fill_manual(values = color_list) +
+guides(fill = guide_legend(override.aes = list(alpha = c(rep(1,8),rep(0.4,8))))) +
+ylab("Number") +
+scale_y_continuous(expand = c(0.02,0)) +
+theme_bw() +
+theme(
+axis.text.x = element_text(angle = 90,color = "black",size = 20,hjust = 1,vjust = 0.5),
+axis.text.y = element_text(hjust = 1,color = "black",size = 20),
+axis.title.y = element_text(hjust = 0.5,color = "black",size = 20),
+axis.title.x = element_blank(),
+#axis.text = element_blank(),
+panel.border = element_blank(),
+panel.grid = element_blank(),
+#aspect.ratio = 3/1,
+#legend.position = "none",
+#plot.margin = unit(rep(-2,4), "cm")
+axis.line = element_line(colour = "black")
+)
+
+######save and print
+#ggsave("adult_D_axis.pdf",p,device = "pdf",dpi=600, width = 14.2, height = 6)
+p
