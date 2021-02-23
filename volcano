@@ -95,7 +95,7 @@ p = ggplot(
         panel.grid = element_blank(),
         axis.line = element_line(colour = "black"),
         legend.position="none",
-        plot.margin=unit(rep(4,4),'lines')
+        plot.margin=unit(rep(4,4),'lines') # change the distance bewteen printing and picture
   )+
   annotate("text", x=0.23 , y=270 ,label="FDR < 0.05",size = 15)+
   annotate("text", x=0.25 , y=300 ,label="kidney_IP_2",size = 15)
