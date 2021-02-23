@@ -1,0 +1,42 @@
+library(ggplot2)
+# 设置工作目录
+setwd("/home/mjy/caoshuo/plot_0223")
+
+dataset <- read.table('kidney_IP_2_list.txt',header = T)
+
+# 设置pvalue和logFC的阈值
+cut_off_pvalue = 0.05
+#cut_off_logFC = 1
+dataset = dataset[dataset$allelicRatio != 1,]
+dataset = dataset[dataset$allelicRatio != 0,]
+# 根据阈值分别为上调基因设置‘up’，下调基因设置‘Down’，无差异设置‘Stable’，保存到change列
+# 这里的change列用来设置火山图点的颜色
+dataset$change = ifelse(dataset$qvalue < cut_off_pvalue , 'Up' , 'Down')
+# 绘制火山图====================================
+p = ggplot(
+  #设置数据
+  dataset, 
+  aes(x = allelicRatio, 
+      y = -log10(qvalue), 
+      colour=change)) +
+  geom_point(alpha=0.4, size=1) +
+  scale_color_manual(values=c("black", "red"))+
+  
+  # 辅助线
+  #geom_vline(xintercept=c(-1,1),lty=4,col="black",lwd=0.8) +
+  #geom_hline(yintercept = -log10(cut_off_pvalue),lty=4,col="black",lwd=0.8) +
+  # 坐标轴
+  labs(x="allelicRatio",
+       y="-log10(qvalue)")+
+  theme_bw()+
+  # 图例
+  theme(plot.title = element_text(hjust = 0.5), 
+        #legend.position="right", 
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        axis.line = element_line(colour = "black"),
+        legend.position="none"
+  )+
+  annotate("text", x=0.2 , y=300 ,label="qvalue < 0.05",size = 5)
+p
+ggsave("test1.pdf",p,device = "pdf",dpi=600, width = 4, height = 4)
