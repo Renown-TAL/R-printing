@@ -1,0 +1,21 @@
+setwd("/home/mjy/caoshuo/plot_0223/venn")
+grid.newpage();
+library(VennDiagram)
+venn.plot <- draw.triple.venn(
+  area1 = 1319925, #13
+  area2 = 2576459, #Human_AG_all_hg19_v2.bed
+  area3 = 149081756, #dbsnp_146.hg19.bed
+  n12 = 203394,
+  n23 = 77306,
+  n13 = 701806,
+  n123 = 6774,
+  category = c("Heterozygous variants", "RADAR", "dbSNP"),
+  fill = c("red", "blue", "yellow"),
+  lty = "blank",
+  alpha = 0.6,
+  cex = 2,
+  cat.col = "black",
+  cat.dist = c(0.06,0.06,0.06),
+  cat.pos = c(-20,30,180),
+  cat.cex = c(3,3,3)
+);
